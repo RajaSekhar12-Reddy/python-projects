@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-fastapi-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sample-fastapi
+  template:
+    metadata:
+      labels:
+        app: sample-fastapi
+    spec:
+      containers:
+      - name: sample-fastapi
+        image: rajasekhar3471/sample-fastapi:latest
+        ports:
+        - containerPort: 8000
