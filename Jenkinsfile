@@ -4,7 +4,9 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'sample-fastapi'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
-        REGISTRY_URL = 'your-registry-url' // Update this with your registry URL
+        REGISTRY_URL = 'https://hub.docker.com/repositories/rajasekhar3471' // Update this with your registry URL
+        // Ensure Python tools are in PATH
+        PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/home/jenkins/.local/bin:${env.PATH}"
     }
     
     stages {
@@ -14,12 +16,23 @@ pipeline {
             }
         }
         
+        stage('Setup Python Environment') {
+            steps {
+                script {
+                    echo 'Setting up Python environment...'
+                    // Install pip if not present (for system Python)
+                    sh 'python -m ensurepip --upgrade || true'
+                    sh 'python -m pip install --upgrade pip || true'
+                }
+            }
+        }
+        
         stage('Install Dependencies') {
             steps {
                 script {
                     echo 'Installing Python dependencies...'
-                    sh 'pip install -r requirements.txt'
-                    sh 'pip install pytest pytest-asyncio httpx' // Install testing dependencies
+                    sh 'python -m pip install -r requirements.txt'
+                    sh 'python -m pip install pytest pytest-asyncio httpx' // Install testing dependencies
                 }
             }
         }
@@ -28,9 +41,10 @@ pipeline {
             steps {
                 script {
                     echo 'Running code linting...'
-                    sh 'pip install flake8 black'
-                    sh 'flake8 main.py --max-line-length=88 --ignore=E203,W503'
-                    sh 'black --check main.py'
+                    // Install and run linters using python -m to avoid PATH issues
+                    sh 'python -m pip install flake8 black'
+                    sh 'python -m flake8 main.py --max-line-length=88 --ignore=E203,W503'
+                    sh 'python -m black --check main.py'
                 }
             }
         }
@@ -69,7 +83,7 @@ def test_sum_numbers():
     assert response.json() == {"sum": 8}
 EOF
                     '''
-                    sh 'pip install fastapi[all]'
+                    sh 'python -m pip install fastapi[all]'
                     sh 'python -m pytest test_main.py -v'
                 }
             }
@@ -135,4 +149,4 @@ EOF
             echo 'Pipeline failed!'
         }
     }
-} 
+}
