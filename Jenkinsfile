@@ -15,8 +15,6 @@ pipeline {
                     echo 'Installing dependencies and running Python application...'
                     sh 'python -m pip install --upgrade pip'
                     sh 'pip install -r requirements.txt'
-                    // Add your application run command if needed
-                    // Example: sh 'python app.py' or 'pytest tests/'
                 }
             }
         }
